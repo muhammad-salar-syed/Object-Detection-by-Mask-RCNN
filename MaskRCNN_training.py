@@ -25,32 +25,32 @@ class FruitsDataset(Dataset):
         annotations_dir = dataset_dir + '/annots/'
        
              
-		# Find Images
+	# Find Images
         for filename in listdir(images_dir):
             print(filename)
-			# Extract image id
+	    # Extract image id
             image_id = filename[:-4]
-			#print('IMAGE ID: ',image_id)
+	    #print('IMAGE ID: ',image_id)
 			
-			# Creating training dataset
+	    # Creating train dataset
             if is_train and int(image_id) >= 250:
                 continue
-			# Creating testing dataset
+	    # Creating test dataset
             if not is_train and int(image_id) < 250:
                 continue
             img_path = images_dir + filename
             ann_path = annotations_dir + image_id + '.xml'
-			# Add to dataset
+	    # Add to dataset
             self.add_image('dataset', image_id=image_id, path=img_path, annotation=ann_path, class_ids = [0,1,2,3])
 
 
-	# Extract bounding boxes from .xml file
+    # Extract bounding boxes from .xml file
     def extract_boxes(self, filename):
-		# Load and parse the file
+	# Load and parse the file
         tree = ElementTree.parse(filename)
-		# Getting the root of the document
+	# Getting the root of the document
         root = tree.getroot()
-		# Extract each bounding box
+	# Extract each bounding box
         boxes = list()
         for box in root.findall('.//object'):
             name = box.find('name').text  
@@ -61,25 +61,25 @@ class FruitsDataset(Dataset):
             coors = [xmin, ymin, xmax, ymax, name]
             boxes.append(coors)
 
-		# Extract image dimensions
+	# Extract image dimensions
         width = int(root.find('.//size/width').text)
         height = int(root.find('.//size/height').text)
         return boxes, width, height
 
-	# Load the masks for an image
+    # Load the masks for an image
     def load_mask(self, image_id):
-		# Get details of image
+	# Get details of image
         info = self.image_info[image_id]
-		# Define box file location
+	# Define box file location
         path = info['annotation']
         #return info, path
         
         
-		# load XML
+	# load XML
         boxes, w, h = self.extract_boxes(path)
-		# create one array for all masks, each on a different channel
+	# create one array for all masks, each on a different channel
         masks = zeros([h, w, len(boxes)], dtype='uint8')
-		# create masks
+	# create masks
         class_ids = list()
         for i in range(len(boxes)):
             box = boxes[i]
@@ -101,7 +101,7 @@ class FruitsDataset(Dataset):
         return masks, asarray(class_ids, dtype='int32')
         
 
-	# Load an image reference
+    # Load an image reference
     def image_reference(self, image_id):
         info = self.image_info[image_id]
         return info['path']
